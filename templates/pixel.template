@@ -1,0 +1,7 @@
+showDeviceFrame=yes
+skin.dynamic=yes
+skin.name={{skin_name}}
+skin.path={{skin_path}}
+hw.gpu.enabled=yes
+hw.gpu.mode=auto
+hw.ramSize=1536
