@@ -1,5 +1,5 @@
 # avd_creation_script
-A demonstration of how to create a Pixel Test Device with Android SDK 25 using a bash script that invokes the `avdmanager` command. The resulting AVD will be fully skinned to the Device's Specifications.
+A demonstration of how to create a Skinned Android Virtual Device using a bash script that invokes the `avdmanager` command.
 
 # Pre-requisites
 In order for the bash script to properly work you will need the following to be set-up and installed.
