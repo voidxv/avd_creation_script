@@ -1,65 +1,114 @@
-#################################################
-# CREATE AVD
-#################################################
+main(){
+  # make sure the script runs in its directory
+  cd -- "$(dirname "$BASH_SOURCE")"
 
-AVD_CMD=$ANDROID_HOME/tools/bin/avdmanager
+  #################################################
+  # CREATE AVD
+  #################################################
 
-# ANDROID_VARIABLES
-ANDROID_DEVICE_DIRECTORY=$ANDROID_HOME/devices
-ANDROID_SKINS_DIRECTORY=$ANDROID_HOME/skins
+  AVD_CMD=$ANDROID_HOME/tools/bin/avdmanager
 
-# TEST DEVICE VARIABLES
-TEST_DEVICE=pixel
-TEST_DEVICE_SDK=25
+  # ANDROID_VARIABLES
+  ANDROID_DEVICE_DIRECTORY=$ANDROID_HOME/devices
+  ANDROID_SKINS_DIRECTORY=$ANDROID_HOME/skins
 
-TEST_DEVICE_NAME=${TEST_DEVICE}_${TEST_DEVICE_SDK}
-TEST_DEVICE_DIRECTORY=$ANDROID_DEVICE_DIRECTORY/$TEST_DEVICE_NAME
-TEST_DEVICE_SKINS_DIRECTORY=$ANDROID_SKINS_DIRECTORY/$TEST_DEVICE
+  # TEST DEVICE VARIABLES
+  DEVICE=$1
+  DEVICE_SDK=$2
 
-# SKIN VARIABLES
-SOURCE_SKINS_DIRECTORY=skins
+  DEVICE_NAME=${DEVICE}_${DEVICE_SDK}
+  DEVICE_DIRECTORY=$ANDROID_DEVICE_DIRECTORY/$DEVICE_NAME
+  DEVICE_SKINS_DIRECTORY=$ANDROID_SKINS_DIRECTORY/$DEVICE
 
-# AVD CONFIG VARIABLES
-CONFIG_TEMPLATE_DIRECTORY=templates
-CONFIG_TEMPLATE_PATH=$CONFIG_TEMPLATE_DIRECTORY/$TEST_DEVICE.template
+  # SKIN VARIABLES
+  SOURCE_SKINS_DIRECTORY=skins
 
-# SEE IF THE AVD HAS ALREADY BEEN CREATED BY THIS SCRIPT
-if [ ! -d "$TEST_DEVICE_DIRECTORY" ]; then
+  # CONFIG VARIABLES
+  CONFIG_TEMPLATE_FILE=device.template
 
-  # CREATE THE TEST DEVICE USING THE
-  # AVDMANAGER COMMAND.
-  echo "creating $TEST_DEVICE_NAME"
-  $AVD_CMD create avd \
-  --force \
-  --name $TEST_DEVICE_NAME \
-  --package "system-images;android-$TEST_DEVICE_SDK;google_apis;x86" \
-  --tag "google_apis" \
-  --device $TEST_DEVICE \
-  --path $TEST_DEVICE_DIRECTORY
+  # SEE IF THE AVD HAS ALREADY BEEN CREATED BY THIS SCRIPT
+  if [ ! -d "$DEVICE_DIRECTORY" ]; then
 
-  # COPY THE PIXEL SKIN INTO THE ANDROID SKIN DIRECTORY IF
-  # ANDROID STUDIO HAS NOT ALREADY DOWNLOADED THE PIXEL SKIN
-  if [ ! -d "$TEST_DEVICE_SKINS_DIRECTORY" ]; then
-    echo "copying $TEST_DEVICE skin"
-    cp -r $SOURCE_SKINS_DIRECTORY/ $ANDROID_SKINS_DIRECTORY/
+    # CREATE THE TEST DEVICE USING THE
+    # AVDMANAGER COMMAND.
+    echo "creating $DEVICE_NAME"
+    $AVD_CMD create avd \
+    --force \
+    --name $DEVICE_NAME \
+    --package "system-images;android-$DEVICE_SDK;google_apis;x86" \
+    --tag "google_apis" \
+    --device $(getAvdDeviceId $1) \
+    --path $DEVICE_DIRECTORY
+
+    # COPY THE DEVICE'S SKIN INTO THE ANDROID SKINS DIRECTORY IF
+    # IT IS NOT ALREADY PRESENT
+    if [ ! -d "$DEVICE_SKINS_DIRECTORY" ]; then
+      echo "copying $DEVICE skin"
+      cp -r $SOURCE_SKINS_DIRECTORY/ $ANDROID_SKINS_DIRECTORY/
+    fi
+
+    # CREATE A TEMPORARY COPY OF THE TEMPLATE FILE
+    # SO WE CAN MODIFY IT WITHOUT LOSING THE ORIGINAL
+    cp $CONFIG_TEMPLATE_FILE $CONFIG_TEMPLATE_FILE.tmp
+
+    # REPLACE THE MOUSTACHE TAGS WITH THE REQUIRED INFORMATION
+    sed -i ".sed" "s|{{skin_name}}|$DEVICE|" $CONFIG_TEMPLATE_FILE.tmp
+    sed -i ".sed" "s|{{skin_path}}|$ANDROID_SKINS_DIRECTORY/$DEVICE|" $CONFIG_TEMPLATE_FILE.tmp
+
+    # APPEND THE TEMPLATE FILE TO THE END OF THE TEST DEVICE'S CONFIG.INI
+    cat $CONFIG_TEMPLATE_FILE.tmp >> $DEVICE_DIRECTORY/config.ini
+
+    # DELETE THE TEMPORARY TEMPLATE &
+    # DELETE THE TEMPORARY SED FILE
+    rm $CONFIG_TEMPLATE_FILE.tmp
+    rm $CONFIG_TEMPLATE_FILE.tmp.sed
+
+  else
+    echo "$DEVICE_NAME already created."
   fi
+}
 
-  # CREATE A TEMPORARY COPY OF THE TEMPLATE FILE
-  # SO WE CAN MODIFY IT WITHOUT LOSING THE ORIGINAL
-  cp $CONFIG_TEMPLATE_PATH $CONFIG_TEMPLATE_PATH.tmp
+getAvdDeviceId() {
+  case $1 in
+    "AndroidWearRound") echo 2
+    ;;
+    "AndroidWearSquare") echo 4
+    ;;
+    "galaxy_nexus") echo 5
+    ;;
+    "nexus_4") echo 7
+    ;;
+    "nexus_5") echo 8
+    ;;
+    "nexus_5x") echo 9
+    ;;
+    "nexus_6") echo 10
+    ;;
+    "nexus_6p") echo 11
+    ;;
+    "nexus_7") echo 13
+    ;;
+    "nexus_7_2013") echo 12
+    ;;
+    "nexus_9") echo 14
+    ;;
+    "nexus_10") echo 6
+    ;;
+    "nexus_one") echo 15
+    ;;
+    "nexus_s") echo 16
+    ;;
+    "pixel") echo 17
+    ;;
+    "pixel_c") echo 18
+    ;;
+    "pixel_xl") echo 19
+    ;;
+    "tv_720p") echo 1
+    ;;
+    "tv_1080p") echo 0
+    ;;
+  esac
+}
 
-  # REPLACE THE MOUSTACHE TAGS WITH THE REQUIRED INFORMATION
-  sed -i ".sed" "s|{{skin_name}}|$TEST_DEVICE|" $CONFIG_TEMPLATE_PATH.tmp
-  sed -i ".sed" "s|{{skin_path}}|$ANDROID_SKINS_DIRECTORY/$TEST_DEVICE|" $CONFIG_TEMPLATE_PATH.tmp
-
-  # APPEND THE TEMPLATE FILE TO THE END OF THE TEST DEVICE'S CONFIG.INI
-  cat $CONFIG_TEMPLATE_PATH.tmp >> $TEST_DEVICE_DIRECTORY/config.ini
-
-  # DELETE THE TEMPORARY TEMPLATE &
-  # DELETE THE TEMPORARY SED FILES
-  rm $CONFIG_TEMPLATE_PATH.tmp
-  rm $CONFIG_TEMPLATE_PATH.tmp.sed
-
-else
-  echo "$TEST_DEVICE_NAME already created."
-fi
+main "$@"
