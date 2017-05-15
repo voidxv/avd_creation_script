@@ -4,7 +4,6 @@ A demonstration of how to create a Skinned Android Virtual Device using a bash s
 # Pre-requisites
 In order for the bash script to properly work you will need the following to be set-up and installed.
 * The $ANDROID_HOME Environment variable should be set to your machines Android SDK Installation
-* SDK Manager Package : "system-images;android-25;google_apis;x86"
 
 # Goal
 The goal of this script is to create a Skinned Android Virtual Device using the `avdmanager` command line tool.
@@ -14,8 +13,29 @@ The goal of this script is to create a Skinned Android Virtual Device using the 
   
 The skin_name argument should match the name of a folder inside the skins directory. You will need an x86 System-Image for the sdk_version that you pass into the script. You can check if you have any installed system-images by running the following command: `sdkmanager --list`. Or you can have `sdkmanager` install the required package by running `sdkmanager 'system-images;android-{SDK_VERSION};google_apis;x86'`.
 
+### Supported skin_name Arguments
+* `AndroidWearRound`
+* `AndroidWearSquare`
+* `galaxy_nexus`
+* `nexus_4`
+* `nexus_5`
+* `nexus_5x`
+* `nexus_6`
+* `nexus_6p`
+* `nexus_7`
+* `nexus_7_2013`
+* `nexus_9`
+* `nexus_10`
+* `nexus_one`
+* `nexus_s`
+* `pixel`
+* `pixel_c`
+* `pixel_xl`
+* `tv_720p`
+* `tv_1080p`
+
 # Code Explanation
-I created this script because the new `avdmanager` tool does not come with an option to specify a device skin. Therefore I took the skin files that come bundled with Android Studio and stuck them into the skins folder that you can find in this repo.
+I created this script because the new `avdmanager` tool does not come with an option to specify a device skin. Therefore I created a script that has the ability to create an Android Virtual Device that is fully skinned.
 
 ### STEP 1: Creating the AVD
 The first step should seem pretty straight forward if you have figured out how to use the new `avdmanager` command. If not then this should help you out quite a bit. Probably the trickiest part of creating the AVD is the `--package` option that you have to exactly specify. The option is wanting the exact system-image package that `sdkmanager` has installed onto your machine. E.G `system-images;android-25;google_apis;x86` for SDK 25.
